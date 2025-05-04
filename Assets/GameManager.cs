@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public GameObject wonPanel; 
     public FirstPersonLook lookScript;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI timerText;
 
     public GameObject[] PickUps;
 
@@ -47,19 +48,19 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         gameTimer += Time.deltaTime;
+        changeTrashTagTimer += Time.deltaTime;
 
         //Skip evil tresh check for first 8 seconds
         if (gameTimer < 10f && gameTimer > 4.8f) return;
 
         //tag change every 10s
-        if (changeTrashTagTimer >= 10f)
+        if (changeTrashTagTimer >= 15f)
         {
             ChangeEvilTrashTags();
             changeTrashTagTimer = 0f; //Reset timer
         }
 
         bool nearEvilTrash = false;
-        bool tooFar = true;
 
         foreach (GameObject obj in PickUps)
         {
@@ -79,7 +80,7 @@ public class GameManager : MonoBehaviour
 
         if (nearEvilTrash)
         {
-            talkieLightMat.SetColor("_EmissionColor", Color.red * Mathf.LinearToGammaSpace(4f));
+            talkieLightMat.SetColor("_EmissionColor", Color.red * Mathf.LinearToGammaSpace(5f));
         } 
         else {
             talkieLightMat.SetColor("_EmissionColor", Color.white * Mathf.LinearToGammaSpace(-10f));
@@ -141,6 +142,7 @@ public class GameManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Time.timeScale = 0f;
+            timerText.text = "Finished in - " + Mathf.RoundToInt(gameTimer) + " sec";
             wonPanel.SetActive(true);
         }
     }
@@ -175,5 +177,22 @@ public class GameManager : MonoBehaviour
 
     void ChangeEvilTrashTags() {
         Debug.Log("Trash bout to get retaged");
+        foreach (GameObject obj in PickUps)
+        {
+            if (obj != null && obj.CompareTag("evil-trash")) //all to trash
+            {
+                obj.tag = "trash";
+            }
+        }
+
+        //Randomly select 3 to mek them evil-trash
+        for (int i = 0; i < 3; i++)
+        {
+            int randomIndex = Random.Range(0, PickUps.Length);
+            if (PickUps[randomIndex] != null && PickUps[randomIndex].CompareTag("trash"))
+            {
+                PickUps[randomIndex].tag = "evil-trash"; 
+            }
+        }
     }
 }
